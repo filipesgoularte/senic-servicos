@@ -1,0 +1,11 @@
+# Senic Serviços — https://senicservicos.com.br/
+# Todo o conteúdo é público e pode ser indexado.
+
+User-agent: *
+Allow: /
+
+# CSS, JS e imagens precisam ficar acessíveis: o Google renderiza a página
+# antes de avaliá-la e bloquear esses arquivos derruba o ranqueamento.
+Allow: /assets/
+
+Sitemap: https://senicservicos.com.br/sitemap.xml

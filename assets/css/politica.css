@@ -1,0 +1,212 @@
+/*
+   SENIC SERVIÇOS — POLITICA.CSS
+   Documento legal em coluna única, para leitura contínua.
+   Depende de style.css: tokens, header, botões e rodapé vêm de lá.
+   Todos os direitos reservados © 2026
+*/
+
+/* ============================================================
+   1. TOPO
+   ============================================================ */
+
+.legal-hero {
+  position: relative;
+  padding: clamp(108px, 15vw, 152px) 0 clamp(28px, 4vw, 40px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.legal-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(64% 58% at 20% 0%, rgba(212, 175, 55, .13) 0%, transparent 70%),
+    linear-gradient(180deg, var(--surface-1) 0%, var(--ink) 100%);
+}
+
+.legal-wrap { max-width: 68ch; margin-inline: auto; }
+
+.legal-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  font-size: .8125rem;
+  color: var(--text-3);
+  transition: color .3s ease;
+}
+
+.legal-voltar:hover { color: var(--gold); }
+.legal-voltar svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.legal-title {
+  font-size: clamp(1.7rem, 1.15rem + 2.2vw, 2.6rem);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -.024em;
+  margin-bottom: 14px;
+  text-wrap: balance;
+}
+
+.legal-lead {
+  font-size: clamp(.95rem, .92rem + .25vw, 1.05rem);
+  color: var(--text-2);
+  line-height: 1.72;
+  text-wrap: pretty;
+}
+
+.legal-data {
+  margin-top: 20px;
+  font-size: .8125rem;
+  color: var(--text-3);
+}
+
+.legal-data strong { color: var(--text-2); font-weight: 600; }
+
+/* ============================================================
+   2. CORPO
+   ============================================================ */
+
+.legal-body { padding: clamp(32px, 4vw, 48px) 0 clamp(60px, 8vw, 96px); }
+
+.legal-section { margin-bottom: clamp(38px, 5vw, 52px); }
+.legal-section:last-child { margin-bottom: 0; }
+
+.legal-section > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: clamp(1.15rem, 1.05rem + .6vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -.016em;
+  text-wrap: balance;
+}
+
+.legal-section > h2 .num {
+  flex-shrink: 0;
+  font-size: .78em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.legal-section h3 {
+  margin: 26px 0 10px;
+  font-size: .9875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legal-body p {
+  margin-bottom: 14px;
+  color: var(--text-2);
+  line-height: 1.78;
+  text-wrap: pretty;
+}
+
+.legal-body p:last-child { margin-bottom: 0; }
+.legal-body strong { color: var(--text); font-weight: 600; }
+
+.legal-body a:not(.btn):not(.legal-voltar) {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(212, 175, 55, .45);
+  transition: color .25s ease, text-decoration-color .25s ease;
+}
+
+.legal-body a:not(.btn):not(.legal-voltar):hover { color: var(--gold-light); text-decoration-color: var(--gold-light); }
+
+/* ---- listas ---- */
+
+.legal-list { display: grid; gap: 10px; margin: 4px 0 18px; list-style: none; }
+
+.legal-list li {
+  position: relative;
+  padding-left: 24px;
+  color: var(--text-2);
+  line-height: 1.72;
+  text-wrap: pretty;
+}
+
+.legal-list li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: .74em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold-grad);
+}
+
+.legal-list b { color: var(--text); font-weight: 600; }
+
+/* ---- bloco de identificação e destaque ---- */
+
+.legal-box {
+  padding: 20px 22px;
+  margin: 4px 0 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: .9375rem;
+  line-height: 1.75;
+  color: var(--text-2);
+}
+
+.legal-box strong { color: var(--text); }
+.legal-box.destaque { border-color: var(--line-gold); background: rgba(212, 175, 55, .05); }
+
+/* ---- revogação de consentimento ---- */
+
+.consent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  margin: 6px 0 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+}
+
+.consent p { margin: 0; flex: 1 1 240px; font-size: .875rem; }
+.consent .btn { --btn-py: 11px; --btn-px: 22px; font-size: .6875rem; }
+
+/* ---- rodapé enxuto: só a linha final, sem as colunas da home ---- */
+
+.footer-simples { padding: clamp(28px, 4vw, 40px) 0; }
+.footer-simples .footer-bottom { margin-top: 0; padding-top: 0; border-top: none; }
+
+/* ============================================================
+   3. IMPRESSÃO
+   ============================================================ */
+
+@media print {
+  .header, .whatsapp-float, .cookie-banner, .skip-link, .legal-voltar, .consent .btn { display: none !important; }
+
+  body { background: #fff; color: #111; }
+  body::after { display: none; }
+
+  .legal-hero { padding: 0 0 16px; }
+  .legal-hero::before { display: none; }
+  .legal-wrap { max-width: none; }
+
+  .legal-body p, .legal-list li, .legal-box { color: #222; }
+  .legal-title, .legal-section > h2, .legal-section h3 { color: #000; }
+  .legal-section > h2 .num { -webkit-text-fill-color: #8a6d15; color: #8a6d15; }
+  .legal-section { break-inside: avoid-page; }
+  .legal-box, .consent { background: none; border-color: #ccc; }
+  .footer { background: none; border-top: 1px solid #ccc; }
+  a { color: #000 !important; }
+}

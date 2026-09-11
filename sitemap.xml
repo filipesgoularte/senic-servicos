@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap da Senic Serviços.
+  Se a landing page for publicada em outro endereço que não a raiz do domínio,
+  troque https://senicservicos.com.br/ pelo caminho final em todas as <loc>.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://senicservicos.com.br/</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://senicservicos.com.br/assets/img/senic-seguranca-empresarial.webp</image:loc>
+      <image:title>Profissional de segurança patrimonial da Senic Serviços em fachada corporativa</image:title>
+      <image:caption>Segurança patrimonial terceirizada para restaurantes, comércios e empresas em São Paulo.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://senicservicos.com.br/assets/img/senic-controle-acesso.webp</image:loc>
+      <image:title>Profissional de segurança patrimonial da Senic Serviços em operação</image:title>
+      <image:caption>Operação de segurança patrimonial adaptada à rotina de cada negócio.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://senicservicos.com.br/politica.html</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
