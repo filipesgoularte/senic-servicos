@@ -23,8 +23,7 @@ DirectoryIndex index.html
 
   # Arquivos internos do projeto nunca são servidos
   RewriteRule (^|/)\.(?!well-known/) - [F,L]
-  RewriteRule ^(_backup|tools)(/|$) - [F,L]
-  RewriteRule ^assets/img/_originais(/|$) - [F,L]
+  RewriteRule ^tools(/|$) - [F,L]
   RewriteRule \.(mjs|md|log|bak|sql|sh|ini|env|lock|ya?ml)$ - [F,L,NC]
 
   # Só métodos que um site estático usa
