@@ -18,152 +18,140 @@
 
   /* 
      1. CLIENTES — CARROSSEL INFINITO COM DRAG
+     Os cartões vêm prontos no HTML (indexáveis e sem innerHTML); o JS só
+     duplica o conjunto para o loop e marca as cópias como decorativas.
       */
 
-  const clientsData = [
-    {
-      name: "Restaurante Flight 510",
-      since: "Cliente desde 2011",
-      desc: "Tradicional restaurante em São Paulo focado em refeições diárias com alto padrão de atendimento e grande fluxo diário."
-    },
-    {
-      name: "Top Game",
-      since: "Cliente desde 2025",
-      desc: "Importadora e operadora de equipamentos de entretenimento que atua com muita força no varejo e negócios de diversão."
-    },
-    {
-      name: "Pizzaria Sp Diversões",
-      since: "Parceria contínua",
-      desc: "Consolidado espaço gastronômico com destaque para preparos no forno a lenha e intenso fluxo de clientes."
-    },
-    {
-      name: "Grupo GPS",
-      since: "Cliente desde 2013",
-      desc: "Referência na prestação de serviços de facilities, segurança e terceirização de mão de obra desde 1962."
-    }
-  ];
-
   (function initCarousel() {
-    const track = document.getElementById("clientTrack");
-    const wrap = document.getElementById("carouselWrap");
+    var track = document.getElementById("clientTrack");
+    var wrap = document.getElementById("carouselWrap");
 
     if (!track || !wrap) return;
 
-    let html = "";
-    clientsData.forEach(function (c) {
-      html +=
-        '<div class="client-card">' +
-        "<h3>" + c.name + "</h3>" +
-        '<div class="since">' + c.since + "</div>" +
-        "<p>" + c.desc + "</p>" +
-        "</div>";
-    });
+    var originais = Array.prototype.slice.call(track.children);
+    var totalCards = originais.length;
+    if (!totalCards) return;
 
-    track.innerHTML = html + html + html + html;
+    var copias = document.createDocumentFragment();
+    for (var n = 0; n < 3; n++) {
+      originais.forEach(function (card) {
+        var c = card.cloneNode(true);
+        c.setAttribute("aria-hidden", "true");
+        copias.appendChild(c);
+      });
+    }
+    track.appendChild(copias);
 
-    var totalCards = clientsData.length;
     var currentX = 0;
     var isDragging = false;
     var startX = 0;
     var dragStartX = 0;
     var autoScroll = true;
+    var visivel = false;
     var animId = null;
+    var cardWidth = 0;
 
-    function getCardWidth() {
-      var first = track.querySelector(".client-card");
-      if (!first) return 260;
-      var minWidth = parseFloat(window.getComputedStyle(first).minWidth) || 240;
-      return minWidth + 16;
+    /* medida lida uma vez (e a cada resize) — nunca dentro do quadro de animação */
+    function medir() {
+      var first = track.firstElementChild;
+      cardWidth = first ? first.getBoundingClientRect().width + 16 : 296;
     }
 
     function updateTransform(x) {
-      track.style.transform = "translateX(" + -x + "px)";
+      track.style.transform = "translate3d(" + -x + "px,0,0)";
+    }
+
+    function normalizar() {
+      var setWidth = cardWidth * totalCards;
+      while (currentX >= setWidth) currentX -= setWidth;
+      while (currentX < 0) currentX += setWidth;
     }
 
     function animate() {
+      animId = null;
+      if (!visivel) return;
       if (autoScroll) {
         currentX += 0.4;
-        var cw = getCardWidth();
-        var setWidth = cw * totalCards;
-        if (currentX >= setWidth) {
-          currentX -= setWidth;
-        }
+        normalizar();
         updateTransform(currentX);
       }
       animId = requestAnimationFrame(animate);
     }
 
-    wrap.addEventListener("mousedown", function (e) {
+    function iniciar() {
+      if (animId === null && visivel && !menosMovimento()) {
+        animId = requestAnimationFrame(animate);
+      }
+    }
+
+    function arrastar(pageX) {
+      currentX = dragStartX - (pageX - startX);
+      var maxX = cardWidth * totalCards * 2;
+      currentX = Math.max(0, Math.min(maxX, currentX));
+      updateTransform(currentX);
+    }
+
+    function comecar(pageX) {
       isDragging = true;
-      startX = e.pageX;
+      startX = pageX;
       dragStartX = currentX;
       autoScroll = false;
+    }
+
+    function soltar() {
+      if (!isDragging) return;
+      isDragging = false;
+      autoScroll = true;
+      normalizar();
+      updateTransform(currentX);
+    }
+
+    wrap.addEventListener("mousedown", function (e) {
+      comecar(e.pageX);
       wrap.style.cursor = "grabbing";
     });
 
     window.addEventListener("mousemove", function (e) {
-      if (!isDragging) return;
-      var diff = e.pageX - startX;
-      currentX = dragStartX - diff;
-      if (currentX < 0) currentX = 0;
-      var cw = getCardWidth();
-      var maxX = cw * totalCards * 2;
-      if (currentX > maxX) currentX = maxX;
-      updateTransform(currentX);
+      if (isDragging) arrastar(e.pageX);
     });
 
     window.addEventListener("mouseup", function () {
       if (!isDragging) return;
-      isDragging = false;
       wrap.style.cursor = "grab";
-      autoScroll = true;
-      var cw = getCardWidth();
-      var setWidth = cw * totalCards;
-      while (currentX >= setWidth) currentX -= setWidth;
-      while (currentX < 0) currentX += setWidth;
-      updateTransform(currentX);
+      soltar();
     });
 
     wrap.addEventListener("touchstart", function (e) {
-      isDragging = true;
-      startX = e.touches[0].pageX;
-      dragStartX = currentX;
-      autoScroll = false;
+      comecar(e.touches[0].pageX);
     }, { passive: true });
 
     wrap.addEventListener("touchmove", function (e) {
-      if (!isDragging) return;
-      var diff = e.touches[0].pageX - startX;
-      currentX = dragStartX - diff;
-      if (currentX < 0) currentX = 0;
-      var cw = getCardWidth();
-      var maxX = cw * totalCards * 2;
-      if (currentX > maxX) currentX = maxX;
-      updateTransform(currentX);
+      if (isDragging) arrastar(e.touches[0].pageX);
     }, { passive: true });
 
-    wrap.addEventListener("touchend", function () {
-      if (!isDragging) return;
-      isDragging = false;
-      autoScroll = true;
-      var cw = getCardWidth();
-      var setWidth = cw * totalCards;
-      while (currentX >= setWidth) currentX -= setWidth;
-      while (currentX < 0) currentX += setWidth;
-      updateTransform(currentX);
-    }, { passive: true });
+    wrap.addEventListener("touchend", soltar, { passive: true });
 
     track.addEventListener("dragstart", function (e) {
       e.preventDefault();
     });
 
-    /* Movimento reduzido: cartoes ficam estaticos e nenhum rAF fica girando. */
-    if (menosMovimento()) {
-      autoScroll = false;
-      updateTransform(0);
-    } else {
-      animate();
-    }
+    window.addEventListener("resize", medir, { passive: true });
+
+    /* Movimento reduzido: cartoes ficam estaticos e nenhum rAF fica girando.
+       Fora da tela ou com a aba oculta, a animação também para. */
+    if (menosMovimento()) return;
+
+    new IntersectionObserver(function (entradas) {
+      visivel = entradas[0].isIntersecting && !document.hidden;
+      if (visivel) {
+        if (!cardWidth) medir();
+        iniciar();
+      }
+    }, { rootMargin: "100px 0px" }).observe(wrap);
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) visivel = false;
+    });
   })();
 
   /* 
@@ -171,7 +159,8 @@
       */
 
   (function initCookieBanner() {
-    var consent = localStorage.getItem("senic_cookie_consent");
+    var consent = null;
+    try { consent = localStorage.getItem("senic_cookie_consent"); } catch (e) {}
     var banner = document.getElementById("cookieBanner");
     var acceptBtn = document.getElementById("cookieAccept");
 
@@ -184,7 +173,7 @@
     }
 
     acceptBtn.addEventListener("click", function () {
-      localStorage.setItem("senic_cookie_consent", "true");
+      try { localStorage.setItem("senic_cookie_consent", "true"); } catch (e) {}
       banner.classList.remove("show");
     });
   })();
@@ -197,11 +186,12 @@
     var header = document.getElementById("header");
     if (!header) return;
 
+    var rolado = false;
     window.addEventListener("scroll", function () {
-      if (window.scrollY > 50) {
-        header.classList.add("scrolled");
-      } else {
-        header.classList.remove("scrolled");
+      var agora = window.scrollY > 50;
+      if (agora !== rolado) {
+        rolado = agora;
+        header.classList.toggle("scrolled", agora);
       }
     }, { passive: true });
   })();
@@ -215,23 +205,29 @@
     if (!bar) return;
 
     var ticking = false;
+    var max = 0;
+
+    function medir() {
+      max = document.documentElement.scrollHeight - window.innerHeight;
+    }
 
     function update() {
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = max > 0 ? (window.scrollY / max) * 100 : 0;
-      bar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+      var p = max > 0 ? window.scrollY / max : 0;
+      bar.style.transform = "scaleX(" + Math.min(1, Math.max(0, p)).toFixed(4) + ")";
       ticking = false;
     }
 
-    window.addEventListener("scroll", function () {
+    function agendar() {
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(update);
       }
-    }, { passive: true });
+    }
 
-    window.addEventListener("resize", update, { passive: true });
-    update();
+    window.addEventListener("scroll", agendar, { passive: true });
+    window.addEventListener("resize", function () { medir(); agendar(); }, { passive: true });
+    /* a altura só é lida depois do carregamento, fora da execução do script */
+    window.addEventListener("load", function () { medir(); agendar(); });
   })();
 
   /* 
@@ -324,15 +320,17 @@
 
     var reduzido = window.matchMedia("(prefers-reduced-motion: reduce)");
     var pendente = false;
+    var altura = window.innerHeight;
+    var amplitude = window.innerWidth < 600 ? 24 : 56;
 
     function render() {
       pendente = false;
       if (reduzido.matches) { foto.style.transform = ""; return; }
 
-      var altura = window.innerHeight;
-      var amplitude = window.innerWidth < 600 ? 24 : 56;
-      var topo = hero.getBoundingClientRect().top;
-      var progresso = Math.max(0, Math.min(1, -topo / altura));
+      /* o hero começa no topo do documento: a rolagem já dá a posição sem ler layout */
+      var y = window.scrollY;
+      if (y > altura * 1.2) return;
+      var progresso = Math.max(0, Math.min(1, y / altura));
 
       /* A escala mantém sobra de imagem para o deslocamento nunca expor a borda. */
       foto.style.transform =
@@ -345,9 +343,12 @@
     }
 
     window.addEventListener("scroll", agendar, { passive: true });
-    window.addEventListener("resize", agendar, { passive: true });
+    window.addEventListener("resize", function () {
+      altura = window.innerHeight;
+      amplitude = window.innerWidth < 600 ? 24 : 56;
+      agendar();
+    }, { passive: true });
     reduzido.addEventListener("change", render);
-    render();
   })();
 
   /* 
@@ -369,7 +370,17 @@
 
     var reduzido = window.matchMedia("(prefers-reduced-motion: reduce)");
     var pendente = false;
+    var visivel = false;
     var ultimoY = window.scrollY;
+    var altura, largura, env, estreito;
+
+    /* medidas lidas só quando a faixa entra na tela ou a janela muda */
+    function medir() {
+      altura = window.innerHeight;
+      largura = palco.clientWidth;
+      env = aguia.offsetWidth;
+      estreito = window.innerWidth < 600;
+    }
 
     function render() {
       pendente = false;
@@ -379,17 +390,13 @@
         if (asaD) asaD.style.transform = "";
         return;
       }
+      if (!visivel) return;
 
       var rect = secao.getBoundingClientRect();
-      var altura = window.innerHeight;
 
       /* 0 quando a faixa surge por baixo da tela, 1 quando termina de sair
          por cima. Rolar para trás rebobina o voo pelo mesmo caminho. */
       var p = Math.max(0, Math.min(1, (altura - rect.top) / (altura + rect.height)));
-
-      var largura = palco.clientWidth;
-      var env = aguia.offsetWidth;
-      var estreito = window.innerWidth < 600;
 
       /* As asas começam recolhidas e terminam de abrir no primeiro terço
          da faixa; a partir daí passam a bater. */
@@ -410,6 +417,7 @@
     }
 
     function agendar() {
+      if (!visivel) return;
       var y = window.scrollY;
       /* limiar evita que micro-oscilações fiquem trocando a inclinação */
       if (Math.abs(y - ultimoY) > 2) {
@@ -423,9 +431,19 @@
 
     secao.classList.add("descendo");
     window.addEventListener("scroll", agendar, { passive: true });
-    window.addEventListener("resize", agendar, { passive: true });
+    window.addEventListener("resize", function () {
+      if (visivel) { medir(); agendar(); }
+    }, { passive: true });
     reduzido.addEventListener("change", render);
-    render();
+
+    new IntersectionObserver(function (entradas) {
+      visivel = entradas[0].isIntersecting;
+      if (visivel) {
+        medir();
+        ultimoY = window.scrollY;
+        agendar();
+      }
+    }).observe(secao);
   })();
 
   /* 

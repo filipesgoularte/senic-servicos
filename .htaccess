@@ -1,0 +1,109 @@
+# =============================================================================
+#  SENIC SERVIÇOS — .htaccess (Hostinger / LiteSpeed)
+#  Segurança, endereço canônico, cache e compressão.
+# =============================================================================
+
+Options -Indexes -MultiViews
+ServerSignature Off
+DirectoryIndex index.html
+
+# -----------------------------------------------------------------------------
+# 1. ENDEREÇO CANÔNICO — HTTPS e sem "www" (evita conteúdo duplicado no Google)
+# -----------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://senicservicos.com.br%{REQUEST_URI} [L,R=301,NE]
+
+  # /index.html -> / (uma única URL para a página inicial)
+  RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+  RewriteRule ^index\.html$ / [L,R=301]
+
+  # Arquivos internos do projeto nunca são servidos
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
+  RewriteRule ^(_backup|tools)(/|$) - [F,L]
+  RewriteRule ^assets/img/_originais(/|$) - [F,L]
+  RewriteRule \.(mjs|md|log|bak|sql|sh|ini|env|lock|ya?ml)$ - [F,L,NC]
+
+  # Só métodos que um site estático usa
+  RewriteCond %{REQUEST_METHOD} !^(GET|HEAD)$
+  RewriteRule ^ - [R=405,L]
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# 2. CABEÇALHOS DE SEGURANÇA
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  # HTTPS obrigatório por 1 ano, inclusive subdomínios
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Bloqueia sniffing de MIME, clickjacking e vazamento de URL completa
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Permitted-Cross-Domain-Policies "none"
+
+  # Isolamento de contexto de navegação (proteção contra ataques cross-origin)
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+
+  # APIs sensíveis do navegador desligadas
+  Header always set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), interest-cohort=(), browsing-topics=()"
+
+  # Content Security Policy — só o próprio domínio + Google Tag Manager/Google Ads.
+  # Nenhum script inline é permitido (o GTM é carregado por assets/js/gtm.js).
+  # Se adicionar uma tag nova no GTM que use outro domínio, inclua-o aqui.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.google.com https://google.com https://www.google.com.br https://www.googleadservices.com; font-src 'self'; connect-src 'self' https://www.googletagmanager.com https://www.google.com https://google.com https://www.google.com.br https://googleads.g.doubleclick.net https://*.doubleclick.net https://www.googleadservices.com https://pagead2.googlesyndication.com; frame-src https://www.googletagmanager.com https://td.doubleclick.net https://*.doubleclick.net; worker-src 'none'; manifest-src 'self'; media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me; frame-ancestors 'none'; upgrade-insecure-requests"
+
+  Header always unset X-Powered-By
+  Header unset X-Powered-By
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# 3. TIPOS DE ARQUIVO
+# -----------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType image/avif .avif
+  AddType image/webp .webp
+  AddType font/woff2 .woff2
+  AddType application/javascript .js
+  AddType text/css .css
+  AddType application/xml .xml
+  AddCharset utf-8 .html .css .js .xml .txt
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# 4. CACHE
+#    HTML sempre revalidado (mudanças aparecem na hora).
+#    CSS/JS levam ?v=<hash> no HTML (tools/build.mjs): cache de 1 ano é seguro.
+#    Imagens e fontes: ao trocar uma imagem, use um nome de arquivo novo.
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|xml|txt)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|avif|webp|png|jpe?g|svg|ico|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# 5. COMPRESSÃO (a CDN da Hostinger já entrega Brotli; isto é o fallback)
+# -----------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/xml image/svg+xml
+</IfModule>

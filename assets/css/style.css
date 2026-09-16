@@ -5,6 +5,31 @@
 */
 
 /* ============================================================
+   0. FONTE — Inter variável hospedada no próprio domínio
+   Sem Google Fonts: nenhuma conexão externa bloqueia a renderização.
+   "Inter Fallback" é o Arial ajustado às métricas da Inter, para a troca
+   de fonte não deslocar o layout.
+   ============================================================ */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/assets/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+
+/* ============================================================
    1. RESET
    ============================================================ */
 
@@ -104,7 +129,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
    ============================================================ */
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--ink);
   color: var(--text);
   font-size: 16px;
@@ -201,7 +226,6 @@ body::after {
   text-transform: uppercase;
   white-space: nowrap;
   transition: transform .35s var(--ease), box-shadow .35s var(--ease), background .35s var(--ease), color .3s ease;
-  will-change: transform;
 }
 
 .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
@@ -244,10 +268,13 @@ body::after {
   top: 0;
   left: 0;
   height: 2px;
-  width: 0;
+  width: 100%;
   z-index: 1001;
   background: var(--gold-grad);
-  transition: width .1s linear;
+  /* escala em vez de largura: animação composta na GPU, sem refazer layout */
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
 }
 
 .header {
@@ -359,6 +386,8 @@ body::after {
   height: 100%;
   object-fit: cover;
   object-position: 50% 4%;
+  /* mesmo estado inicial da paralaxe, para não haver salto na primeira rolagem */
+  transform: scale(1.06);
   will-change: transform;
 }
 
@@ -419,18 +448,27 @@ body::after {
 }
 
 .hero-badge .dot {
+  position: relative;
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 0 0 rgba(212, 175, 55, .6);
-  animation: pulse 2.4s infinite;
+}
+
+/* pulso feito com transform + opacity: roda no compositor, não repinta a cada quadro */
+.hero-badge .dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, .55);
+  animation: pulse 2.4s ease-out infinite;
 }
 
 @keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(212, 175, 55, .55); }
-  70%  { box-shadow: 0 0 0 9px rgba(212, 175, 55, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+  0%   { transform: scale(1); opacity: 1; }
+  70%  { transform: scale(3.6); opacity: 0; }
+  100% { transform: scale(3.6); opacity: 0; }
 }
 
 .hero h1 {
@@ -1057,6 +1095,13 @@ body::after {
 
 .faq { background: var(--surface-1); }
 
+.process,
+.faq,
+.footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 .faq-list { display: grid; gap: 10px; max-width: 860px; margin-inline: auto; }
 
 .faq-item {
@@ -1303,11 +1348,20 @@ body::after {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade { opacity: 0; animation: fadeUp .8s var(--ease) forwards; }
-.delay-1 { animation-delay: .1s; }
-.delay-2 { animation-delay: .2s; }
-.delay-3 { animation-delay: .32s; }
-.delay-4 { animation-delay: .44s; }
+.animate-fade { opacity: 0; animation: fadeUp .6s var(--ease) forwards; }
+
+/* Título e texto do hero são o LCP: ficam visíveis desde o primeiro quadro
+   (sem opacity 0) e só deslizam — a página parece pronta instantaneamente. */
+@keyframes rise {
+  from { transform: translateY(18px); }
+  to   { transform: translateY(0); }
+}
+
+.animate-rise { animation: rise .7s var(--ease) both; }
+.delay-1 { animation-delay: .06s; }
+.delay-2 { animation-delay: .12s; }
+.delay-3 { animation-delay: .18s; }
+.delay-4 { animation-delay: .24s; }
 
 /* ---- revelação na rolagem ----
    Só esconde quando o JS confirma que assumiu o controle (.js-pronto).

@@ -8,7 +8,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://senicservicos.com.br/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -24,7 +24,7 @@
   </url>
   <url>
     <loc>https://senicservicos.com.br/politica.html</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
